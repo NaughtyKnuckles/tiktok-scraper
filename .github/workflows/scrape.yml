@@ -57,12 +57,3 @@ jobs:
         with:
           name: scrape-results
           path: results/
-```
-
-Also update `requirements.txt` on GitHub to pin the exact version:
-```
-playwright==1.44.0
-supabase
-python-dotenv
-schedule
-python-telegram-bot
