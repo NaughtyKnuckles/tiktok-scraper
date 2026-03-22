@@ -8,38 +8,15 @@ on:
 jobs:
   scrape:
     runs-on: ubuntu-latest
+    container:
+      image: mcr.microsoft.com/playwright/python:v1.44.0-jammy
 
     steps:
       - name: Checkout code
         uses: actions/checkout@v4
 
-      - name: Set up Python
-        uses: actions/setup-python@v5
-        with:
-          python-version: '3.11'
-
-      - name: Trick system into thinking libasound2 is installed
-        run: |
-          sudo apt-get update
-          sudo apt-get install -y libasound2t64 dpkg-dev
-          cd /tmp
-          mkdir -p fake-pkg/DEBIAN
-          cat > fake-pkg/DEBIAN/control << 'EOF'
-          Package: libasound2
-          Version: 1.2.11-1
-          Architecture: amd64
-          Maintainer: fake <fake@fake.com>
-          Description: Fake libasound2 for Ubuntu 24 compatibility
-          Provides: libasound2
-          EOF
-          dpkg-deb --build fake-pkg
-          sudo dpkg -i fake-pkg.deb
-
       - name: Install Python dependencies
         run: pip install -r requirements.txt
-
-      - name: Install Playwright browsers
-        run: playwright install chromium --with-deps
 
       - name: Write cookies from secret
         run: echo '${{ secrets.TIKTOK_COOKIES }}' > cookies.json
