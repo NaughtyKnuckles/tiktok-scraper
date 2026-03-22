@@ -13,17 +13,17 @@ async def scrape_trending_products():
     async with async_playwright() as p:
         context = await p.chromium.launch_persistent_context(
             user_data_dir="./browser-session",
-            headless=True,                        # no screen on GitHub servers
+            headless=True,
             args=[
                 "--disable-blink-features=AutomationControlled",
-                "--no-sandbox",                   # required on Linux servers
-                "--disable-dev-shm-usage",        # prevents memory crashes
+                "--no-sandbox",
+                "--disable-dev-shm-usage",
                 "--disable-gpu",
             ]
         )
         page = await context.new_page()
 
-        # Load saved cookies if they exist (we'll set this up next)
+        # Load saved cookies
         if os.path.exists("cookies.json"):
             with open("cookies.json", "r") as f:
                 cookies = json.load(f)
@@ -32,8 +32,9 @@ async def scrape_trending_products():
 
         print("Navigating to Top Products...")
         await page.goto(PRODUCTS_URL, wait_until="domcontentloaded", timeout=60000)
-        await asyncio.sleep(6)
+        await asyncio.sleep(10)
 
+        # Handle login redirect
         if "login" in page.url:
             print("ERROR: Not logged in — cookies may have expired.")
             await context.close()
@@ -50,14 +51,29 @@ async def scrape_trending_products():
 
         print(f"On page: {page.url}")
 
+        # Wait longer and scroll to trigger page load
+        print("Waiting for page to fully load...")
+        await asyncio.sleep(12)
+        await page.evaluate("window.scrollBy(0, 300)")
+        await asyncio.sleep(5)
+
+        # Save screenshot and HTML for debugging
+        await page.screenshot(path="github_page.png", full_page=True)
+        html = await page.content()
+        with open("github_debug.html", "w", encoding="utf-8") as f:
+            f.write(html)
+        print("Saved screenshot and HTML for debugging")
+        print(f"Page title: {await page.title()}")
+        print(f"Page URL after wait: {page.url}")
+
         all_products = []
         page_num = 1
 
         while True:
             print(f"\nScraping page {page_num} of 22...")
-            await asyncio.sleep(3)
+            await asyncio.sleep(5)
 
-            await page.wait_for_selector("tr", timeout=15000)
+            await page.wait_for_selector("tr", timeout=60000)
             rows = await page.query_selector_all("tr")
 
             page_products = []

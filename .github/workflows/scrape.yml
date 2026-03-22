@@ -8,29 +8,15 @@ on:
 jobs:
   scrape:
     runs-on: ubuntu-latest
+    container:
+      image: mcr.microsoft.com/playwright/python:v1.44.0-jammy
 
     steps:
       - name: Checkout code
         uses: actions/checkout@v4
 
-      - name: Set up Python
-        uses: actions/setup-python@v5
-        with:
-          python-version: '3.11'
-
-      - name: Fix Ubuntu 24 broken package name
-        run: |
-          sudo apt-get update
-          sudo apt-get install -y libasound2t64
-          sudo ln -sf /usr/lib/x86_64-linux-gnu/libasound2t64.so.2 /usr/lib/x86_64-linux-gnu/libasound.so.2
-
       - name: Install Python dependencies
         run: pip install -r requirements.txt
-
-      - name: Install Playwright and Chromium
-        run: |
-          playwright install chromium
-          playwright install-deps chromium
 
       - name: Write cookies from secret
         run: echo '${{ secrets.TIKTOK_COOKIES }}' > cookies.json
@@ -43,8 +29,12 @@ jobs:
       - name: Run scraper
         run: python main.py
 
-      - name: Upload results CSV
+      - name: Upload results and debug files
         uses: actions/upload-artifact@v4
+        if: always()
         with:
           name: scrape-results
-          path: results/
+          path: |
+            results/
+            github_page.png
+            github_debug.html
