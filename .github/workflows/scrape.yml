@@ -29,8 +29,12 @@ jobs:
       - name: Run scraper
         run: python main.py
 
-      - name: Upload results CSV
+      - name: Upload results and debug files
         uses: actions/upload-artifact@v4
+        if: always()
         with:
           name: scrape-results
-          path: results/
+          path: |
+            results/
+            github_page.png
+            github_debug.html
