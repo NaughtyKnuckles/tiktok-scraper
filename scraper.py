@@ -32,7 +32,7 @@ async def scrape_trending_products():
 
         print("Navigating to Top Products...")
         await page.goto(PRODUCTS_URL, wait_until="domcontentloaded", timeout=60000)
-        await asyncio.sleep(6)
+        await asyncio.sleep(10)
 
         if "login" in page.url:
             print("ERROR: Not logged in — cookies may have expired.")
@@ -57,7 +57,8 @@ async def scrape_trending_products():
             print(f"\nScraping page {page_num} of 22...")
             await asyncio.sleep(3)
 
-            await page.wait_for_selector("tr", timeout=15000)
+            await asyncio.sleep(8)
+            await page.wait_for_selector("tr", timeout=60000)
             rows = await page.query_selector_all("tr")
 
             page_products = []
