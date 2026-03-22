@@ -34,7 +34,4 @@ jobs:
         if: always()
         with:
           name: scrape-results
-          path: |
-            results/
-            github_page.png
-            github_debug.html
+          path: results/
