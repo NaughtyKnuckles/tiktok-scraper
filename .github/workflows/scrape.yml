@@ -1,0 +1,42 @@
+name: TikTok Daily Scraper
+
+on:
+  schedule:
+    - cron: '0 0 * * *'   # runs every day at 8am Philippine time (UTC+8 = midnight UTC)
+  workflow_dispatch:        # lets you run it manually from GitHub anytime
+
+jobs:
+  scrape:
+    runs-on: ubuntu-latest
+
+    steps:
+      - name: Checkout code
+        uses: actions/checkout@v4
+
+      - name: Set up Python
+        uses: actions/setup-python@v5
+        with:
+          python-version: '3.11'
+
+      - name: Install dependencies
+        run: pip install -r requirements.txt
+
+      - name: Install Playwright browsers
+        run: playwright install chromium --with-deps
+
+      - name: Write cookies from secret
+        run: echo '${{ secrets.TIKTOK_COOKIES }}' > cookies.json
+
+      - name: Write Telegram config
+        run: |
+          echo "TELEGRAM_TOKEN=${{ secrets.TELEGRAM_TOKEN }}" >> .env
+          echo "CHAT_ID=${{ secrets.CHAT_ID }}" >> .env
+
+      - name: Run scraper
+        run: python main.py
+
+      - name: Upload results CSV
+        uses: actions/upload-artifact@v4
+        with:
+          name: scrape-results
+          path: results/
